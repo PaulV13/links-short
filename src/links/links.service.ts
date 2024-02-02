@@ -15,8 +15,8 @@ export class LinksService {
 
   async createUrlShort(body: UrlDto, param: string): Promise<Link> {
     const { urlOriginal } = body
-    console.log(urlOriginal)
-    if (urlOriginal === '') throw new BadRequestException('La url no puede ser vacia')
+
+    if (urlOriginal === '' || urlOriginal === undefined) throw new BadRequestException('La url no puede ser vacia')
 
     //Busca que exista el link con la url original y si existe la retorna
     const link = await this.prisma.link.findUnique({
