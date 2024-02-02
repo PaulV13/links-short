@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Link" ADD COLUMN     "id" SERIAL NOT NULL,
+ADD CONSTRAINT "Link_pkey" PRIMARY KEY ("id");
