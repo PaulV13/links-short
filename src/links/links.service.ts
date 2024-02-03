@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Link } from '@prisma/client'
 import { UrlDto } from './dto/url.dto'
+import axios from 'axios'
 
 @Injectable()
 export class LinksService {
@@ -62,22 +63,45 @@ export class LinksService {
     return link
   }
 
-  async updateVisits(urlShort: string) {
-    const link = await this.prisma.link.findFirst({
+  async updateVisits(link: Link, ipAddress: string | string[]) {
+    await this.prisma.link.update({
       where: {
-        url_short: urlShort,
+        url_short: link.url_short,
+      },
+      data: {
+        visits: link.visits + 1,
       },
     })
 
-    if (link) {
-      await this.prisma.link.update({
-        where: {
-          url_short: urlShort,
-        },
-        data: {
-          visits: link.visits + 1,
-        },
+    const country: string = await this.getCountry(ipAddress)
+    const createCountry = await this.prisma.country.upsert({
+      where: {
+        name: country,
+      },
+      update: {
+        name: country,
+      },
+      create: {
+        name: country,
+      },
+    })
+
+    await this.prisma.linkCountry.create({
+      data: {
+        linkId: link.id,
+        countryId: createCountry.id,
+      },
+    })
+  }
+
+  async getCountry(ipAddress: string | string[]) {
+    return axios
+      .get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=167.62.229.126`)
+      .then(response => {
+        return response.data.country
       })
-    }
+      .catch(error => {
+        return error
+      })
   }
 }

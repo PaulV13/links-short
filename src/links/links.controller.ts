@@ -3,7 +3,6 @@ import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { Link } from '@prisma/client'
 import { UrlDto } from './dto/url.dto'
-import axios from 'axios'
 
 @Controller()
 export class LinksController {
@@ -20,11 +19,12 @@ export class LinksController {
   }
 
   @Get(':code')
-  async redirect(@Res() res: Response, @Param('code') code: string) {
+  async redirect(@Res() res: Response, @Req() req: Request, @Param('code') code: string) {
+    const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
     const link = await this.linksService.redirectToOriginalUrl(code)
 
     if (link) {
-      await this.linksService.updateVisits(code)
+      await this.linksService.updateVisits(link, ipAddress)
       return res.redirect(link.url_original)
     }
   }
@@ -33,13 +33,6 @@ export class LinksController {
   async infoIP(@Req() req: Request) {
     const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
 
-    return axios
-      .get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=${ipAddress}`)
-      .then(response => {
-        return response.data
-      })
-      .catch(error => {
-        return error
-      })
+    return await this.linksService.getCountry(ipAddress)
   }
 }

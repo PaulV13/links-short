@@ -25,6 +25,8 @@ model LinkCountry {
   countryId Int
   country   Country @relation(fields: [countryId], references: [id])
 
+  visits Int @default(0)
+
   @@id([linkId, countryId])
 }
 
