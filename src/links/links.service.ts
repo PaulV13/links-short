@@ -73,23 +73,22 @@ export class LinksService {
       },
     })
 
-    const country: string = await this.getCountry(ipAddress)
-    const createCountry = await this.prisma.country.upsert({
-      where: {
-        name: country,
-      },
-      update: {
-        name: country,
-      },
-      create: {
-        name: country,
-      },
-    })
+    const newCountry: string = await this.getCountry(ipAddress)
 
-    await this.prisma.linkCountry.create({
+    await this.prisma.country.create({
       data: {
-        linkId: link.id,
-        countryId: createCountry.id,
+        name: newCountry,
+        LinkCountry: {
+          create: [
+            {
+              link: {
+                connect: {
+                  id: link.id,
+                },
+              },
+            },
+          ],
+        },
       },
     })
   }
