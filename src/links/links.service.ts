@@ -73,29 +73,49 @@ export class LinksService {
       },
     })
 
-    const newCountry: string = await this.getCountry(ipAddress)
-
-    await this.prisma.country.create({
-      data: {
-        name: newCountry,
-        LinkCountry: {
-          create: [
-            {
-              link: {
-                connect: {
-                  id: link.id,
-                },
-              },
-            },
-          ],
-        },
+    const newCountryName: string = await this.getCountry(ipAddress)
+    const country = await this.prisma.country.findUnique({
+      where: {
+        name: newCountryName,
       },
     })
+
+    if (!country) {
+      await this.prisma.country.create({
+        data: {
+          name: newCountryName,
+          links: {
+            create: [
+              {
+                visits: 1,
+                link: { connect: { id: link.id } },
+              },
+            ],
+          },
+        },
+      })
+    } else {
+      await this.prisma.linkCountry.upsert({
+        create: {
+          linkId: link.id,
+          countryId: country.id,
+        },
+        update: {
+          visits: { increment: 1 },
+        },
+        where: {
+          linkId_countryId: {
+            linkId: link.id,
+            countryId: country.id,
+          },
+        },
+      })
+    }
   }
 
   async getCountry(ipAddress: string | string[]) {
     return axios
-      .get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=167.62.229.126`)
+      .get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=${ipAddress}`)
       .then(response => {
         return response.data.country
       })

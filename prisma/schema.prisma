@@ -15,7 +15,7 @@ model Link {
   url_original String        @unique
   url_short    String        @unique
   visits       Int
-  LinkCountry  LinkCountry[]
+  countries  LinkCountry[]
 }
 
 model LinkCountry {
@@ -28,10 +28,11 @@ model LinkCountry {
   visits Int @default(0)
 
   @@id([linkId, countryId])
+  @@unique([linkId, countryId])
 }
 
 model Country {
   id          Int           @id @default(autoincrement())
   name        String        @unique
-  LinkCountry LinkCountry[]
+  links LinkCountry[]
 }
