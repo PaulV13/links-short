@@ -11,8 +11,25 @@ datasource db {
 }
 
 model Link {
-  id Int @id @default(autoincrement())
-  url_original String @unique
-  url_short String @unique
-  visits Int
+  id           Int           @id @default(autoincrement())
+  url_original String        @unique
+  url_short    String        @unique
+  visits       Int
+  LinkCountry  LinkCountry[]
+}
+
+model LinkCountry {
+  linkId Int
+  link   Link @relation(fields: [linkId], references: [id])
+
+  countryId Int
+  country   Country @relation(fields: [countryId], references: [id])
+
+  @@id([linkId, countryId])
+}
+
+model Country {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  LinkCountry LinkCountry[]
 }
