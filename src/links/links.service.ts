@@ -69,7 +69,7 @@ export class LinksService {
         url_short: link.url_short,
       },
       data: {
-        visits: link.visits + 1,
+        visits: { increment: 1 },
       },
     })
 
@@ -122,5 +122,29 @@ export class LinksService {
       .catch(error => {
         return error
       })
+  }
+
+  async getAllCountry(urlShort: string) {
+    const link = await this.prisma.link.findFirst({
+      where: {
+        url_short: urlShort,
+      },
+    })
+
+    if (link) {
+      const linkCountries = await this.prisma.linkCountry.findMany({
+        include: {
+          country: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        where: {
+          linkId: link.id,
+        },
+      })
+      return linkCountries
+    }
   }
 }

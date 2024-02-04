@@ -29,10 +29,8 @@ export class LinksController {
     }
   }
 
-  @Get('info/ip')
-  async infoIP(@Req() req: Request) {
-    const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
-
-    return await this.linksService.getCountry(ipAddress)
+  @Get(':code/allCountry')
+  async getAllCountry(@Param('code') code: string) {
+    return await this.linksService.getAllCountry(code)
   }
 }
