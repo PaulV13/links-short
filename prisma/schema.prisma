@@ -16,6 +16,9 @@ model Link {
   url_short    String        @unique
   visits       Int
   countries  LinkCountry[]
+
+  user User? @relation(fields: [userId], references: [id])
+  userId Int? 
 }
 
 model LinkCountry {
@@ -35,4 +38,12 @@ model Country {
   id          Int           @id @default(autoincrement())
   name        String        @unique
   links LinkCountry[]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+
+  links Link[]
 }

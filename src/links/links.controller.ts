@@ -4,11 +4,11 @@ import { LinksService } from './links.service'
 import { Link } from '@prisma/client'
 import { UrlDto } from './dto/url.dto'
 
-@Controller()
+@Controller('links')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
-  @Post('links?')
+  @Post('?')
   async createUrlShort(@Body() body: UrlDto, @Query('param') param: string): Promise<Link> {
     return await this.linksService.createUrlShort(body, param)
   }
