@@ -30,13 +30,6 @@ export class LinksService {
     if (link) {
       return link
     }
-
-    /*let urlShort = ''
-    if (param) {
-      urlShort = param
-    } else {
-      urlShort = Math.random().toString(36).substring(2, 8)
-    }*/
     const urlShort = param || Math.random().toString(36).substring(2, 8)
     const userId = user?.sub
 
@@ -119,7 +112,7 @@ export class LinksService {
 
   async getCountry(ipAddress: string | string[]) {
     try {
-      const response = await axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=${ipAddress}`)
+      const response = await axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=${process.env.API_KEY_IP}&ip_address=${ipAddress}`)
       return response.data.country
     } catch (error) {
       console.error(error)
