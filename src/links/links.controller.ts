@@ -1,16 +1,18 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { Link } from '@prisma/client'
-import { UrlDto } from './dto/url.dto'
+import { LinkDto } from './dto/url.dto'
+import { AuthGuard } from 'src/auth/auth.guard'
 
 @Controller('links')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
-  @Post('?')
-  async createUrlShort(@Body() body: UrlDto, @Query('param') param: string): Promise<Link> {
-    return await this.linksService.createUrlShort(body, param)
+  @UseGuards(AuthGuard)
+  @Post()
+  async createUrlShort(@Body() body: LinkDto, @Query('param') param: string, @Req() req: any): Promise<Link> {
+    return await this.linksService.createUrlShort(body, param, req.user)
   }
 
   @Get()

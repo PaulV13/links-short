@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Link } from '@prisma/client'
-import { UrlDto } from './dto/url.dto'
+import { LinkDto } from './dto/url.dto'
 import axios from 'axios'
 
 @Injectable()
@@ -14,10 +14,11 @@ export class LinksService {
     return links
   }
 
-  async createUrlShort(body: UrlDto, param: string): Promise<Link> {
+  async createUrlShort(body: LinkDto, param: string, user: any): Promise<Link> {
     const { urlOriginal } = body
 
-    if (urlOriginal === '' || urlOriginal === undefined) throw new BadRequestException('La url no puede ser vacia')
+    //if (urlOriginal === '' || urlOriginal === undefined) throw new BadRequestException('La url no puede ser vacia')
+    if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
 
     //Busca que exista el link con la url original y si existe la retorna
     const link = await this.prisma.link.findUnique({
@@ -30,12 +31,14 @@ export class LinksService {
       return link
     }
 
-    let urlShort = ''
+    /*let urlShort = ''
     if (param) {
       urlShort = param
     } else {
       urlShort = Math.random().toString(36).substring(2, 8)
-    }
+    }*/
+    const urlShort = param || Math.random().toString(36).substring(2, 8)
+    const userId = user?.sub
 
     //Crea un nuevo link con la url original, la url corta y la visita por defecto en 0
     const newLink = await this.prisma.link.create({
@@ -43,6 +46,7 @@ export class LinksService {
         url_original: urlOriginal,
         url_short: urlShort,
         visits: 0,
+        userId,
       },
     })
 
@@ -114,14 +118,13 @@ export class LinksService {
   }
 
   async getCountry(ipAddress: string | string[]) {
-    return axios
-      .get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=${ipAddress}`)
-      .then(response => {
-        return response.data.country
-      })
-      .catch(error => {
-        return error
-      })
+    try {
+      const response = await axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=835c354aa85d4b6195173c62ccbe8eaf&ip_address=${ipAddress}`)
+      return response.data.country
+    } catch (error) {
+      console.error(error)
+      return 'Unknown'
+    }
   }
 
   async getAllCountry(urlShort: string) {
@@ -130,21 +133,21 @@ export class LinksService {
         url_short: urlShort,
       },
     })
+    if (!link) return
 
-    if (link) {
-      const linkCountries = await this.prisma.linkCountry.findMany({
-        include: {
-          country: {
-            select: {
-              name: true,
-            },
+    const linkCountries = await this.prisma.linkCountry.findMany({
+      include: {
+        country: {
+          select: {
+            name: true,
           },
         },
-        where: {
-          linkId: link.id,
-        },
-      })
-      return linkCountries
-    }
+      },
+      where: {
+        linkId: link.id,
+      },
+    })
+
+    return linkCountries
   }
 }

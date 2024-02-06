@@ -16,6 +16,7 @@ export const jwtSecret = 'zjP9h6ZI5LoSKCRj'
     JwtModule.register({
       secret: process.env.TOKEN_SECRET_KEY,
       signOptions: { expiresIn: '60s' },
+      global: true,
     }),
   ],
   providers: [AuthService],
