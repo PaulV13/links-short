@@ -38,7 +38,7 @@ export class LinksService {
       data: {
         url_original: urlOriginal,
         url_short: urlShort,
-        visits: 1,
+        visits: 0,
         userId,
       },
     })
@@ -96,6 +96,7 @@ export class LinksService {
         create: {
           linkId: link.id,
           countryId: country.id,
+          visits: 1,
         },
         update: {
           visits: { increment: 1 },
