@@ -33,12 +33,12 @@ export class LinksService {
     const urlShort = param || Math.random().toString(36).substring(2, 8)
     const userId = user?.sub
 
-    //Crea un nuevo link con la url original, la url corta y la visita por defecto en 0
+    //Crea un nuevo link con la url original, la url corta y la visita por defecto en 1
     const newLink = await this.prisma.link.create({
       data: {
         url_original: urlOriginal,
         url_short: urlShort,
-        visits: 0,
+        visits: 1,
         userId,
       },
     })
