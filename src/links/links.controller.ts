@@ -20,7 +20,7 @@ export class LinksController {
 
   @Get(':shortUrl')
   async redirect(@Res() res: Response, @Req() req: Request, @Param('shortUrl') shortUrl: string) {
-    const link = await this.linksService.redirectToOriginalUrl(shortUrl, req)
+    const link = await this.linksService.redirectToOriginalUrl(shortUrl)
 
     if (link) {
       return res.redirect(link.url_original)

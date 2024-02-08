@@ -3,7 +3,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Link } from '@prisma/client'
 import { LinkDto } from './dto/url.dto'
 import { CountryDto } from './dto/country.dto'
-import { Request } from 'express'
 
 @Injectable()
 export class LinksService {
@@ -42,7 +41,7 @@ export class LinksService {
     return newLink
   }
 
-  async redirectToOriginalUrl(short_url: string, req: Request): Promise<Link | null> {
+  async redirectToOriginalUrl(short_url: string): Promise<Link | null> {
     const link = await this.prisma.link.findFirst({
       where: {
         url_short: short_url,
@@ -62,10 +61,7 @@ export class LinksService {
       },
     })
 
-    let ipAddress = req.socket.remoteAddress
-
-    if (!ipAddress) ipAddress = '103.37.180.0'
-    const countryName = await this.getCountry(ipAddress)
+    const countryName = await this.getCountry()
 
     let country = await this.prisma.country.findUnique({ where: { name: countryName } })
 
@@ -122,8 +118,9 @@ export class LinksService {
     return countries
   }
 
-  async getCountry(ip: string): Promise<string> {
-    const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&ip_address=${ip}&fields=country`)
+  async getCountry(ip?: string): Promise<string> {
+    const ipAddress = ip || '103.37.180.0'
+    const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&ip_address=${ipAddress}&fields=country`)
     const { country } = await reponse.json()
 
     return country
