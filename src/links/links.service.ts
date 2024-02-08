@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Link } from '@prisma/client'
 import { LinkDto } from './dto/url.dto'
 import { CountryDto } from './dto/country.dto'
+import IP from 'ip'
 
 @Injectable()
 export class LinksService {
@@ -61,7 +62,8 @@ export class LinksService {
       },
     })
 
-    const countryName = await this.getCountry()
+    const ipAddress = IP.address()
+    const countryName = await this.getCountry(ipAddress)
 
     let country = await this.prisma.country.findUnique({ where: { name: countryName } })
 
@@ -118,8 +120,8 @@ export class LinksService {
     return countries
   }
 
-  async getCountry(): Promise<string> {
-    const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&fields=country`)
+  async getCountry(ip: string): Promise<string> {
+    const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&ip_address=${ip}&fields=country`)
     const { country } = await reponse.json()
 
     return country
