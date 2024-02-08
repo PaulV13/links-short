@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Link } from '@prisma/client'
 import { LinkDto } from './dto/url.dto'
 import { CountryDto } from './dto/country.dto'
+import { Request } from 'express'
 
 @Injectable()
 export class LinksService {
@@ -41,7 +42,7 @@ export class LinksService {
     return newLink
   }
 
-  async redirectToOriginalUrl(short_url: string, ip: string): Promise<Link | null> {
+  async redirectToOriginalUrl(short_url: string, req: Request): Promise<Link | null> {
     const link = await this.prisma.link.findFirst({
       where: {
         url_short: short_url,
@@ -61,7 +62,9 @@ export class LinksService {
       },
     })
 
-    const ipAddress = ip
+    let ipAddress = req.socket.remoteAddress
+
+    if (!ipAddress) ipAddress = ''
     const countryName = await this.getCountry(ipAddress)
 
     let country = await this.prisma.country.findUnique({ where: { name: countryName } })
