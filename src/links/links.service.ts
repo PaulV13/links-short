@@ -64,7 +64,7 @@ export class LinksService {
 
     let ipAddress = req.socket.remoteAddress
 
-    if (!ipAddress) ipAddress = ''
+    if (!ipAddress) ipAddress = '103.37.180.0'
     const countryName = await this.getCountry(ipAddress)
 
     let country = await this.prisma.country.findUnique({ where: { name: countryName } })

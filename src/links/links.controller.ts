@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Ip, Param, Post, Query, Res } from '@nestjs/common'
-import { Response } from 'express'
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common'
+import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { Link } from '@prisma/client'
 import { LinkDto } from './dto/url.dto'
@@ -19,8 +19,8 @@ export class LinksController {
   }
 
   @Get(':shortUrl')
-  async redirect(@Res() res: Response, @Ip() ip: string, @Param('shortUrl') shortUrl: string) {
-    const link = await this.linksService.redirectToOriginalUrl(shortUrl, ip)
+  async redirect(@Res() res: Response, @Req() req: Request, @Param('shortUrl') shortUrl: string) {
+    const link = await this.linksService.redirectToOriginalUrl(shortUrl, req)
 
     if (link) {
       return res.redirect(link.url_original)
