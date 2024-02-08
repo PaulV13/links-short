@@ -127,7 +127,7 @@ export class LinksService {
   async getCountry(req: Request): Promise<string> {
     let ipAddress = (await this.getIp(req)) || '103.37.180.0'
     console.log(ipAddress)
-    if (Array.isArray(ipAddress)) ipAddress = ipAddress[0]
+    ipAddress = ipAddress.toString().split(',')[0]
 
     const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&ip_address=${ipAddress}&fields=country`)
     const { country } = await reponse.json()
