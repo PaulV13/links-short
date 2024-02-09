@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response, Request } from 'express'
-import { LinksService } from './links.service'
-import { Link } from '@prisma/client'
-import { LinkDto } from './dto/url.dto'
+import { AuthRequest, LinksService } from './links.service'
+import { CreateLinkDto } from './dto/create-link.dto'
+import { AuthGuard } from 'src/auth/auth.guard'
+import { Link } from './entities/link.entity'
 
-@Controller()
+@Controller('links')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
@@ -13,9 +14,15 @@ export class LinksController {
     return await this.linksService.findAll()
   }
 
+  @Get(':id')
+  async findOneLink(@Param('id') id: string): Promise<Link> {
+    return await this.linksService.findOne(id)
+  }
+
   @Post()
-  async createUrlShort(@Body() body: LinkDto, @Query('param') param: string): Promise<Link> {
-    return await this.linksService.createUrlShort(body, param)
+  @UseGuards(AuthGuard)
+  async createUrlShort(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Query('param') param: string): Promise<Link> {
+    return await this.linksService.createUrlShort(req, body, param)
   }
 
   @Get(':shortUrl')
@@ -35,5 +42,10 @@ export class LinksController {
   @Get(':id/countries')
   async getCountriesUrlshort(@Param('id') id: string) {
     return await this.linksService.getCountriesUrlshort(id)
+  }
+
+  @Get('links/:userId')
+  async getLinksByUser(@Param('userId') userId: string): Promise<Link[]> {
+    return await this.linksService.getLinksByUser(userId)
   }
 }

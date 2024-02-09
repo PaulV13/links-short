@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { UserDto } from 'src/users/dto/user.dto'
-import { plainToClass } from 'class-transformer'
-import { TokenDto } from './dto/token.dto'
+import { plainToInstance } from 'class-transformer'
+import { TokenAccess } from 'types'
+import { User } from 'src/users/entity/user.entity'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -13,7 +13,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, password: string): Promise<TokenDto> {
+  async login(email: string, password: string): Promise<TokenAccess> {
     const user = await this.prisma.user.findUnique({ where: { email: email } })
 
     if (!user) {
@@ -32,7 +32,7 @@ export class AuthService {
     }
   }
 
-  async register(email: string, password: string): Promise<UserDto> {
+  async register(email: string, password: string): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { email: email } })
 
     if (user) {
@@ -49,6 +49,6 @@ export class AuthService {
       },
     })
 
-    return plainToClass(UserDto, newUser)
+    return plainToInstance(User, newUser)
   }
 }

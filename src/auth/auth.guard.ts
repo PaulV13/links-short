@@ -22,7 +22,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException()
       }
     }
-
+    console.log('Soy un guard')
     return true
   }
 

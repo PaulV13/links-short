@@ -1,9 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { Link } from '@prisma/client'
-import { LinkDto } from './dto/url.dto'
+import { CreateLinkDto } from './dto/create-link.dto'
 import { CountryDto } from './dto/country.dto'
 import { Request } from 'express'
+import { TokenUser } from 'types'
+import { Link } from './entities/link.entity'
+import { plainToInstance } from 'class-transformer'
+
+export interface AuthRequest extends Request {
+  user: TokenUser
+}
 
 @Injectable()
 export class LinksService {
@@ -12,10 +18,22 @@ export class LinksService {
   async findAll(): Promise<Link[]> {
     const links = await this.prisma.link.findMany()
     if (links.length === 0) throw new NotFoundException('No se encuentra ningun link')
-    return links
+    return plainToInstance(Link, links)
   }
 
-  async createUrlShort(body: LinkDto, param: string): Promise<Link> {
+  async findOne(id: string): Promise<Link> {
+    const idNumber = Number(id)
+
+    if (isNaN(idNumber)) throw new BadRequestException('El id debe ser un numero')
+
+    const link = await this.prisma.link.findUnique({ where: { id: idNumber } })
+    if (!link) throw new NotFoundException('No se encuentra ningun link con ese id')
+    return plainToInstance(Link, link)
+  }
+
+  async createUrlShort(req: AuthRequest, body: CreateLinkDto, param: string): Promise<Link> {
+    const user = req['user']
+    console.log(user)
     const { urlOriginal } = body
 
     if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
@@ -36,10 +54,11 @@ export class LinksService {
         url_original: urlOriginal,
         url_short: urlShort,
         visits: 0,
+        userId: user ? user.sub : null,
       },
     })
 
-    return newLink
+    return plainToInstance(Link, newLink)
   }
 
   async redirectToOriginalUrl(short_url: string, req: Request): Promise<Link | null> {
@@ -86,7 +105,7 @@ export class LinksService {
       where: { linkId_countryId: { linkId: link.id, countryId: country.id } },
     })
 
-    return link
+    return plainToInstance(Link, link)
   }
 
   async getVisitsUrlshort(id: string): Promise<number> {
@@ -126,12 +145,28 @@ export class LinksService {
 
   async getCountry(req: Request): Promise<string> {
     let ipAddress = (await this.getIp(req)) || '103.37.180.0'
-    console.log(ipAddress)
     ipAddress = ipAddress.toString().split(',')[0]
 
     const reponse = await fetch(`https://ipgeolocation.abstractapi.com/v1?api_key=${process.env.API_KEY_IP}&ip_address=${ipAddress}&fields=country`)
     const { country } = await reponse.json()
 
     return country
+  }
+
+  async getLinksByUser(userId: string): Promise<Link[]> {
+    const idNumber = Number(userId)
+
+    if (isNaN(idNumber)) throw new BadRequestException('El id debe ser un numero')
+
+    const links = await this.prisma.link.findMany({
+      where: { userId: idNumber },
+      include: {
+        countries: {
+          include: { country: true },
+        },
+      },
+    })
+
+    return plainToInstance(Link, links)
   }
 }

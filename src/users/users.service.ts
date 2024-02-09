@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import { UserDto } from './dto/user.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { plainToClass, plainToInstance } from 'class-transformer'
+import { plainToInstance } from 'class-transformer'
+import { User } from './entity/user.entity'
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async getAll(): Promise<UserDto[]> {
+  async getAll(): Promise<User[]> {
     const users = await this.prisma.user.findMany()
 
-    return plainToInstance(UserDto, users)
+    return plainToInstance(User, users)
   }
 
   async findOne(email: string): Promise<UserDto | null> {
@@ -20,6 +21,6 @@ export class UsersService {
 
     if (!user) return null
 
-    return plainToClass(UserDto, user)
+    return plainToInstance(User, user)
   }
 }
