@@ -6,3 +6,7 @@ export type TokenUser = {
 export type TokenAccess = {
   accessToken: string
 }
+
+export interface AuthRequest extends Request {
+  user: TokenUser
+}

@@ -3,13 +3,9 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { CreateLinkDto } from './dto/create-link.dto'
 import { CountryDto } from './dto/country.dto'
 import { Request } from 'express'
-import { TokenUser } from 'types'
+import { AuthRequest } from 'types'
 import { Link } from './entities/link.entity'
 import { plainToInstance } from 'class-transformer'
-
-export interface AuthRequest extends Request {
-  user: TokenUser
-}
 
 @Injectable()
 export class LinksService {
@@ -152,8 +148,10 @@ export class LinksService {
     return country
   }
 
-  async getLinksByUser(userId: string): Promise<Link[]> {
+  async getLinksByUser(req: AuthRequest, userId: string): Promise<Link[]> {
     const idNumber = Number(userId)
+
+    if (req.user.sub !== idNumber) throw new BadRequestException('No tienes permisos para ver estos links')
 
     if (isNaN(idNumber)) throw new BadRequestException('El id debe ser un numero')
 
