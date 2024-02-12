@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { CreateLinkDto } from './dto/create-link.dto'
@@ -15,8 +15,8 @@ export class LinksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/create-link-users-auth')
-  async createUrlShortUserLogin(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Param('param') param?: string): Promise<Link> {
-    return await this.linksService.createUrlShort(req, body, param)
+  async createUrlShortUserLogin(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Query('query') query: string): Promise<Link> {
+    return await this.linksService.createUrlShort(req, body, query)
   }
 
   @Post('/create-link-all-users')

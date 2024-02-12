@@ -10,13 +10,20 @@ import { plainToInstance } from 'class-transformer'
 export class LinksService {
   constructor(private prisma: PrismaService) {}
 
-  async createUrlShort(req: AuthRequest, body: CreateLinkDto, param?: string): Promise<Link> {
+  async createUrlShort(req: AuthRequest, body: CreateLinkDto, query: string): Promise<Link> {
     const user = req.user
     const { urlOriginal } = body
 
     if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
 
-    const urlShort = param || Math.random().toString(36).substring(2, 8)
+    const codeExist = query || ''
+
+    if (codeExist !== '') {
+      const linkExist = await this.prisma.link.findFirst({ where: { url_short: codeExist } })
+      if (linkExist) throw new BadRequestException('Ya existe un link con ese codigo, pruebe con otro por favor')
+    }
+
+    const urlShort = codeExist !== '' ? codeExist : Math.random().toString(36).substring(2, 8)
 
     const newLink = await this.prisma.link.create({
       data: {

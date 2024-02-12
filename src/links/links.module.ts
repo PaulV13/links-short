@@ -3,11 +3,11 @@ import { LinksService } from './links.service'
 import { LinksController } from './links.controller'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from 'src/prisma/prisma.module'
-import { JwtService } from '@nestjs/jwt'
+import { AuthModule } from 'src/auth/auth.module'
 
 @Module({
-  imports: [ConfigModule.forRoot(), PrismaModule],
+  imports: [ConfigModule.forRoot(), PrismaModule, AuthModule],
   controllers: [LinksController],
-  providers: [LinksService, JwtService],
+  providers: [LinksService],
 })
 export class LinksModule {}

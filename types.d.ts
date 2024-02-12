@@ -9,4 +9,7 @@ export type TokenAccess = {
 
 export interface AuthRequest extends Request {
   user: TokenUser
+  query: {
+    code: string
+  }
 }

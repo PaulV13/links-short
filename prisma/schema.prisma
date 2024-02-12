@@ -12,7 +12,7 @@ datasource db {
 
 model Link {
   id           Int           @id @default(autoincrement())
-  url_original String        @unique
+  url_original String        
   url_short    String        @unique
   visits       Int
   countries  LinkCountry[]
