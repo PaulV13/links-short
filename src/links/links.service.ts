@@ -10,13 +10,13 @@ import { plainToInstance } from 'class-transformer'
 export class LinksService {
   constructor(private prisma: PrismaService) {}
 
-  async createUrlShort(req: AuthRequest, body: CreateLinkDto, query: string): Promise<Link> {
+  async createUrlShort(req: AuthRequest, body: CreateLinkDto, code: string): Promise<Link> {
     const user = req.user
     const { urlOriginal } = body
 
     if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
 
-    const codeExist = query || ''
+    const codeExist = code || ''
 
     if (codeExist !== '') {
       const linkExist = await this.prisma.link.findFirst({ where: { url_short: codeExist } })

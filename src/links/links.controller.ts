@@ -3,7 +3,7 @@ import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { CreateLinkDto } from './dto/create-link.dto'
 import { Link } from './entities/link.entity'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { AuthRequest } from 'types'
 
@@ -13,10 +13,16 @@ export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
   @ApiBearerAuth()
+  @ApiQuery({
+    name: 'code',
+    type: String,
+    description: 'El codigo es opcional.',
+    required: false,
+  })
   @UseGuards(JwtAuthGuard)
   @Post('/create-link-users-auth')
-  async createUrlShortUserLogin(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Query('query') query: string): Promise<Link> {
-    return await this.linksService.createUrlShort(req, body, query)
+  async createUrlShortUserLogin(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Query('code') code: string): Promise<Link> {
+    return await this.linksService.createUrlShort(req, body, code)
   }
 
   @Post('/create-link-all-users')
