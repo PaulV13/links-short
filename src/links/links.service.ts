@@ -33,7 +33,6 @@ export class LinksService {
 
   async createUrlShort(req: AuthRequest, body: CreateLinkDto, param: string): Promise<Link> {
     const user = req['user']
-    console.log(user)
     const { urlOriginal } = body
 
     if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')

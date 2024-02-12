@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { plainToInstance } from 'class-transformer'
@@ -17,16 +17,17 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email: email } })
 
     if (!user) {
-      throw new NotFoundException(`No user found for email: ${email}`)
+      throw new BadRequestException('Invalid email or password')
     }
 
     const isPasswordValid = bcrypt.compareSync(password, user.password)
 
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password')
+    if (!isPasswordValid || !user) {
+      throw new BadRequestException('Invalid email or password')
     }
 
     const payload = { sub: user.id, email: user.email }
+
     return {
       accessToken: await this.jwtService.signAsync(payload),
     }
@@ -36,19 +37,22 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email: email } })
 
     if (user) {
-      throw new NotFoundException(`User exists for email: ${email}`)
+      throw new BadRequestException(`User exists for email: ${email}`)
     }
 
-    const salt = bcrypt.genSaltSync(10)
-    const hash = bcrypt.hashSync(password, salt)
+    try {
+      const salt = bcrypt.genSaltSync(10)
+      const hash = bcrypt.hashSync(password, salt)
 
-    const newUser = await this.prisma.user.create({
-      data: {
-        email: email,
-        password: hash,
-      },
-    })
-
-    return plainToInstance(User, newUser)
+      const newUser = await this.prisma.user.create({
+        data: {
+          email: email,
+          password: hash,
+        },
+      })
+      return plainToInstance(User, newUser)
+    } catch (e) {
+      throw new InternalServerErrorException(e)
+    }
   }
 }

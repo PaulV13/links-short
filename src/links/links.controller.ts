@@ -4,7 +4,8 @@ import { AuthRequest, LinksService } from './links.service'
 import { CreateLinkDto } from './dto/create-link.dto'
 import { AuthGuard } from 'src/auth/auth.guard'
 import { Link } from './entities/link.entity'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 
 @Controller('links')
 @ApiTags('links')
@@ -46,6 +47,8 @@ export class LinksController {
     return await this.linksService.getCountriesUrlshort(id)
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
   async getLinksByUser(@Param('userId') userId: string): Promise<Link[]> {
     return await this.linksService.getLinksByUser(userId)

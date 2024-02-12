@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { UserDto } from './dto/user.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { plainToInstance } from 'class-transformer'
@@ -19,7 +19,7 @@ export class UsersService {
       where: { email },
     })
 
-    if (!user) return null
+    if (!user) throw new NotFoundException(`No existe el usuario con este email: ${email}`)
 
     return plainToInstance(User, user)
   }
