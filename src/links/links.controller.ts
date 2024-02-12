@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { LinksService } from './links.service'
 import { CreateLinkDto } from './dto/create-link.dto'
-import { AuthGuard } from 'src/auth/auth.guard'
 import { Link } from './entities/link.entity'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
@@ -13,20 +12,16 @@ import { AuthRequest } from 'types'
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
-  @Get()
-  async findAllLinks(): Promise<Link[]> {
-    return await this.linksService.findAll()
-  }
-
-  @Get(':id')
-  async findOneLink(@Param('id') id: string): Promise<Link> {
-    return await this.linksService.findOne(id)
-  }
-
-  @Post()
-  @UseGuards(AuthGuard)
-  async createUrlShort(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Query('param') param: string): Promise<Link> {
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('/create-link-users-auth')
+  async createUrlShortUserLogin(@Req() req: AuthRequest, @Body() body: CreateLinkDto, @Param('param') param?: string): Promise<Link> {
     return await this.linksService.createUrlShort(req, body, param)
+  }
+
+  @Post('/create-link-all-users')
+  async createUrlShortUsersNoLogin(@Body() body: CreateLinkDto): Promise<Link> {
+    return await this.linksService.createUrlShortNoAuth(body)
   }
 
   @Get(':shortUrl')
@@ -36,16 +31,6 @@ export class LinksController {
     if (link) {
       return res.redirect(link.url_original)
     }
-  }
-
-  @Get(':id/visits')
-  async getVisitsUrlshort(@Param('id') id: string): Promise<number> {
-    return await this.linksService.getVisitsUrlshort(id)
-  }
-
-  @Get(':id/countries')
-  async getCountriesUrlshort(@Param('id') id: string) {
-    return await this.linksService.getCountriesUrlshort(id)
   }
 
   @ApiBearerAuth()
