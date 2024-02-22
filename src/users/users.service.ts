@@ -19,7 +19,7 @@ export class UsersService {
       where: { email },
     })
 
-    if (!user) throw new NotFoundException(`No existe el usuario con este email: ${email}`)
+    if (!user) throw new NotFoundException(`Not exist user with this email: ${email}`)
 
     return plainToInstance(User, user)
   }

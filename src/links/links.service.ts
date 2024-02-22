@@ -14,13 +14,13 @@ export class LinksService {
     const user = req.user
     const { urlOriginal } = body
 
-    if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
+    if (!urlOriginal) throw new BadRequestException('The url can not be empty')
 
     const codeExist = code || ''
 
     if (codeExist !== '') {
       const linkExist = await this.prisma.link.findFirst({ where: { url_short: codeExist } })
-      if (linkExist) throw new BadRequestException('Ya existe un link con ese codigo, pruebe con otro por favor')
+      if (linkExist) throw new BadRequestException('Already exist link with this alias, try with other')
     }
 
     const urlShort = codeExist !== '' ? codeExist : Math.random().toString(36).substring(2, 8)
@@ -40,7 +40,7 @@ export class LinksService {
   async createUrlShortNoAuth(body: CreateLinkDto): Promise<Link> {
     const { urlOriginal } = body
 
-    if (!urlOriginal) throw new BadRequestException('La url no puede ser vacia')
+    if (!urlOriginal) throw new BadRequestException('The url can not be empty')
 
     const urlShort = Math.random().toString(36).substring(2, 8)
 
@@ -64,7 +64,7 @@ export class LinksService {
     })
 
     if (!link) {
-      throw new NotFoundException('No se encuentra ningun link con ese codigo')
+      throw new NotFoundException('Can not find a link whit to this alias')
     }
 
     await this.prisma.link.update({
@@ -125,9 +125,9 @@ export class LinksService {
   async getLinksByUser(req: AuthRequest, userId: string): Promise<Link[]> {
     const idNumber = Number(userId)
 
-    if (req.user.sub !== idNumber) throw new BadRequestException('No tienes permisos para ver estos links')
+    if (req.user.sub !== idNumber) throw new BadRequestException('You are not allowed to view these links')
 
-    if (isNaN(idNumber)) throw new BadRequestException('El id debe ser un numero')
+    if (isNaN(idNumber)) throw new BadRequestException('The id must be a number')
 
     const links = await this.prisma.link.findMany({
       where: { userId: idNumber },
