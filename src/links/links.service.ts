@@ -76,7 +76,11 @@ export class LinksService {
       },
     })
 
-    const countryName = await this.getCountry(req)
+    let countryName = await this.getCountry(req)
+
+    if (!countryName) {
+      countryName = 'Unknown'
+    }
 
     let country = await this.prisma.country.findUnique({ where: { name: countryName } })
 
