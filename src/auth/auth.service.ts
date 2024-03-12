@@ -27,10 +27,10 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email }
+    const accessToken = await this.jwtService.signAsync(payload)
+    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '7d' })
 
-    return {
-      accessToken: await this.jwtService.signAsync(payload),
-    }
+    return { accessToken, refreshToken }
   }
 
   async register(email: string, password: string): Promise<User> {
@@ -54,5 +54,18 @@ export class AuthService {
     } catch (e) {
       throw new InternalServerErrorException(e)
     }
+  }
+
+  async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+    const payload = this.jwtService.verify(refreshToken)
+
+    if (!payload) {
+      throw new BadRequestException('Invalid refresh token')
+    }
+
+    const newPayload = { sub: payload.sub, email: payload.email }
+    const accessToken = await this.jwtService.signAsync(newPayload)
+
+    return { accessToken }
   }
 }

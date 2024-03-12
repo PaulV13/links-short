@@ -16,7 +16,7 @@ export class LinksController {
   @ApiQuery({
     name: 'code',
     type: String,
-    description: 'El codigo es opcional.',
+    description: 'The code is optional',
     required: false,
   })
   @UseGuards(JwtAuthGuard)
